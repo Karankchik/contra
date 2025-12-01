@@ -5,7 +5,7 @@ export class Enemy {
         this.y = y;
         this.width = 40;
         this.height = 60;
-        this.health = 4;
+        this.health = 2;
         this.speed = 0.8 + (game.level * 0.2);
         this.direction = 1;
         this.platformId = platformId;
@@ -83,4 +83,5 @@ export class Enemy {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
+
 }
