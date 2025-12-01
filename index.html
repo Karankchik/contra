@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КОНТРА - Аркадный Автомат</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #2c3e50;
+      font-family: 'Press Start 2P', cursive, 'Courier New', monospace;
+      overflow: hidden;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-image:
+              radial-gradient(circle at 20% 50%, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(231, 76, 60, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(241, 196, 15, 0.1) 0%, transparent 50%);
+    }
+
+    /* Стиль игрового автомата */
+    .arcade-machine {
+      background: linear-gradient(145deg, #c0392b, #e74c3c);
+      padding: 30px;
+      border-radius: 30px;
+      box-shadow:
+              0 0 0 10px #2c3e50,
+              0 0 0 20px #34495e,
+              0 30px 60px rgba(0, 0, 0, 0.8),
+              inset 0 -10px 20px rgba(0, 0, 0, 0.5),
+              inset 0 10px 20px rgba(255, 255, 255, 0.1);
+      position: relative;
+      border: 5px solid #ecf0f1;
+    }
+
+    .arcade-machine::before {
+      content: "⚡ KONAMI ⚡";
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #f1c40f, #e67e22);
+      color: #2c3e50;
+      padding: 10px 30px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .arcade-screen {
+      background: #1a1a2e;
+      border: 8px solid #2c3e50;
+      border-radius: 10px;
+      box-shadow:
+              inset 0 0 30px rgba(0, 0, 0, 0.8),
+              0 0 20px rgba(52, 152, 219, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #gameContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #gameCanvas {
+      display: block;
+      background: #0f3460;
+    }
+
+    /* Ретро-UI */
+    #ui {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(44, 62, 80, 0.95);
+      padding: 12px;
+      border: 3px solid #f1c40f;
+      border-radius: 8px;
+      min-width: 180px;
+      box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+      font-size: 10px;
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #ui div {
+      margin: 4px 0;
+      color: #ecf0f1;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    #level {
+      color: #f1c40f;
+      font-weight: bold;
+    }
+
+    #lives {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    #health {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+
+    #score {
+      color: #3498db;
+      font-weight: bold;
+    }
+
+    #ammo {
+      color: #f1c40f;
+      font-weight: bold;
+    }
+
+    #enemies {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    /* Монетоприемник */
+    .coin-slot {
+      position: absolute;
+      bottom: 20px;
+      right: 30px;
+      width: 40px;
+      height: 60px;
+      background: linear-gradient(145deg, #bdc3c7, #95a5a6);
+      border-radius: 5px;
+      border: 2px solid #7f8c8d;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .coin-slot::before {
+      content: "₽";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #f1c40f;
+      font-size: 20px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Меню в стиле автомата */
+    #menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(26, 26, 46, 0.95);
+      padding: 30px;
+      border: 5px solid #f1c40f;
+      border-radius: 15px;
+      text-align: center;
+      z-index: 100;
+      box-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #menu h1 {
+      color: #f1c40f;
+      font-size: 24px;
+      margin-bottom: 25px;
+      text-shadow: 3px 3px 0 #000;
+      letter-spacing: 2px;
+    }
+
+    .btn {
+      background: linear-gradient(145deg, #e74c3c, #c0392b);
+      border: none;
+      color: white;
+      padding: 15px 25px;
+      margin: 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Press Start 2P', cursive;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 5px 0 #7f8c8d;
+      border: 2px solid #ecf0f1;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #7f8c8d;
+      background: linear-gradient(145deg, #ff6b6b, #e74c3c);
+    }
+
+    .btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #7f8c8d;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Анимации */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .blink {
+      animation: blink 1s infinite;
+    }
+
+    /* Инструкции */
+    #instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(26, 26, 46, 0.98);
+      padding: 30px;
+      border: 5px solid #3498db;
+      border-radius: 15px;
+      text-align: center;
+      z-index: 100;
+      color: #ecf0f1;
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #instructions h2 {
+      color: #3498db;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    #instructions div {
+      margin: 10px 0;
+      font-size: 10px;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="arcade-machine">
+  <div class="arcade-screen">
+    <div id="gameContainer">
+      <canvas id="gameCanvas" width="1200" height="500"></canvas>
+
+      <div id="ui">
+        <div>LEVEL: <span id="level">1</span></div>
+        <div>LIVES: <span id="lives">3</span></div>
+        <div>HEALTH: <span id="health">100</span></div>
+        <div>SCORE: <span id="score">000000</span></div>
+        <div>AMMO: <span id="ammo">100</span></div>
+        <div>ENEMIES: <span id="enemies">0</span></div>
+      </div>
+
+      <div id="menu">
+        <h1>🎮 CONTRA 🎮</h1>
+        <button id="startButton" class="btn">INSERT COIN</button>
+        <button id="instructionsButton" class="btn">HOW TO PLAY</button>
+      </div>
+
+      <div id="instructions" class="hidden">
+        <h2>🎯 HOW TO PLAY</h2>
+        <div>←→ ARROWS: MOVE</div>
+        <div>SPACE/W/↑: JUMP</div>
+        <div>Z KEY: SHOOT</div>
+        <div>P KEY: PAUSE</div>
+        <div>ESC: MENU</div>
+        <div>DESTROY ALL ENEMIES!</div>
+        <button id="backButton" class="btn">BACK</button>
+      </div>
+    </div>
+  </div>
+  <div class="coin-slot"></div>
+</div>
+
+<!-- Основной скрипт, который загружает модули -->
+<script type="module">
+  import { Game } from './modules/Game.js';
+
+  // Инициализация игры при загрузке страницы
+  window.addEventListener('DOMContentLoaded', () => {
+    const game = new Game();
+
+    // Сохраняем ссылку на игру в глобальной области видимости
+    window.game = game;
+
+    // Назначаем обработчики событий для кнопок
+    document.getElementById('startButton').addEventListener('click', () => game.start());
+    document.getElementById('instructionsButton').addEventListener('click', () => game.showInstructions());
+    document.getElementById('backButton').addEventListener('click', () => game.hideInstructions());
+
+    console.log('Игра загружена и готова к работе!');
+  });
+</script>
+
+</body>
+</html>
