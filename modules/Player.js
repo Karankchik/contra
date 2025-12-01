@@ -25,7 +25,7 @@ export class Player {
         this.jumpAnimationSpeed = 200;
 
         this.weapons = {
-            pistol: { name: 'ПИСТОЛЕТ', damage: 1, fireRate: 500, ammo: 100, maxAmmo: 100 }
+            pistol: { name: 'ПИСТОЛЕТ', damage: 1, fireRate: 500, ammo: 25, maxAmmo: 25 }
         };
         this.currentWeapon = 'pistol';
         this.lastShot = 0;
@@ -213,4 +213,5 @@ export class Player {
             ctx.fillText(this.currentAnimation.toUpperCase(), this.x + 5, this.y + 30);
         }
     }
+
 }
